@@ -46,6 +46,7 @@ SDM_StringView SDM_sized_str_as_sv(char *cstr, size_t length);
 SDM_StringView SDM_sv_pop_by_delim(SDM_StringView *SV, const char delim);
 void SDM_sv_trim(SDM_StringView *SV);
 
+char *SDM_shift_args(int *argc, char ***argv);
 
 #endif /* ifndef _SDM_LIB_H */
 

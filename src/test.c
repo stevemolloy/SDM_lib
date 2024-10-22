@@ -17,9 +17,16 @@ typedef struct {
   size_t capacity;
 } char_da_array;
 
-int main(void) { const char *file_path = "./src/test.c";
+int main(int argc, char **argv) {
+  SDM_shift_args(&argc, &argv);
+  if (argc > 0) printf("Arguments:\n");
+  while (argc > 0) {
+    char *argument = SDM_shift_args(&argc, &argv);
+    printf("\t%s\n", argument);
+  }
+
+  const char *file_path = "./src/test.c";
   char *contents = SDM_read_entire_file(file_path);
-  printf("%s\n", contents);
   free(contents);
 
   char *multi_line_str = "Hello\nWorld\nBlahblah\n";
@@ -70,21 +77,21 @@ int main(void) { const char *file_path = "./src/test.c";
   }
 
   printf("\nCreating another empty dyn array...\n");
-  char_da_array dbl_char = {0};
-  printf("dbl_char has a length of %zu\n", dbl_char.length);
-  printf("dbl_char has a capacity of %zu\n", dbl_char.capacity);
-  for (size_t i=0; i<dbl_char.length; i++) {
-    printf("Item %zu: %c\n", i, dbl_char.data[i]);
+  char_da_array char_da = {0};
+  printf("char_da has a length of %zu\n", char_da.length);
+  printf("char_da has a capacity of %zu\n", char_da.capacity);
+  for (size_t i=0; i<char_da.length; i++) {
+    printf("Item %zu: %c\n", i, char_da.data[i]);
   }
 
   printf("\nPushing...\n");
-  SDM_ARRAY_PUSH(dbl_char, 'A');
-  SDM_ARRAY_PUSH(dbl_char, 'B');
-  SDM_ARRAY_PUSH(dbl_char, 'C');
-  printf("dbl_char has a length of %zu\n", dbl_char.length);
-  printf("dbl_char has a capacity of %zu\n", dbl_char.capacity);
-  for (size_t i=0; i<dbl_char.length; i++) {
-    printf("Item %zu: %c\n", i, dbl_char.data[i]);
+  SDM_ARRAY_PUSH(char_da, 'A');
+  SDM_ARRAY_PUSH(char_da, 'B');
+  SDM_ARRAY_PUSH(char_da, 'C');
+  printf("char_da has a length of %zu\n", char_da.length);
+  printf("char_da has a capacity of %zu\n", char_da.capacity);
+  for (size_t i=0; i<char_da.length; i++) {
+    printf("Item %zu: %c\n", i, char_da.data[i]);
   }
 
   return 0;
