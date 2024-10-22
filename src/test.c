@@ -15,7 +15,7 @@ typedef struct {
   char *data;
   size_t length;
   size_t capacity;
-} double_char_array;
+} char_da_array;
 
 int main(void) { const char *file_path = "./src/test.c";
   char *contents = SDM_read_entire_file(file_path);
@@ -70,7 +70,7 @@ int main(void) { const char *file_path = "./src/test.c";
   }
 
   printf("\nCreating another empty dyn array...\n");
-  double_char_array dbl_char = {0};
+  char_da_array dbl_char = {0};
   printf("dbl_char has a length of %zu\n", dbl_char.length);
   printf("dbl_char has a capacity of %zu\n", dbl_char.capacity);
   for (size_t i=0; i<dbl_char.length; i++) {
