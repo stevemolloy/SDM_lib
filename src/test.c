@@ -45,8 +45,8 @@ int main(void) { const char *file_path = "./src/test.c";
   }
 
   printf("\nPushing...\n");
-  ARRAY_PUSH(&dbl_da, 1.0);
-  ARRAY_PUSH(&dbl_da, 2.0);
+  SDM_ARRAY_PUSH(dbl_da, 1.0);
+  SDM_ARRAY_PUSH(dbl_da, 2.0);
   printf("dbl_da has a length of %zu\n", dbl_da.length);
   printf("dbl_da has a capacity of %zu\n", dbl_da.capacity);
   for (size_t i=0; i<dbl_da.length; i++) {
@@ -54,7 +54,7 @@ int main(void) { const char *file_path = "./src/test.c";
   }
 
   printf("\nResetting...\n");
-  ARRAY_RESET(dbl_da);
+  SDM_ARRAY_RESET(dbl_da);
   printf("dbl_da has a length of %zu\n", dbl_da.length);
   printf("dbl_da has a capacity of %zu\n", dbl_da.capacity);
   for (size_t i=0; i<dbl_da.length; i++) {
@@ -62,7 +62,7 @@ int main(void) { const char *file_path = "./src/test.c";
   }
 
   printf("\nFreeing...\n");
-  ARRAY_FREE(dbl_da);
+  SDM_ARRAY_FREE(dbl_da);
   printf("dbl_da has a length of %zu\n", dbl_da.length);
   printf("dbl_da has a capacity of %zu\n", dbl_da.capacity);
   for (size_t i=0; i<dbl_da.length; i++) {
@@ -78,9 +78,9 @@ int main(void) { const char *file_path = "./src/test.c";
   }
 
   printf("\nPushing...\n");
-  ARRAY_PUSH(&dbl_char, 'A');
-  ARRAY_PUSH(&dbl_char, 'B');
-  ARRAY_PUSH(&dbl_char, 'C');
+  SDM_ARRAY_PUSH(dbl_char, 'A');
+  SDM_ARRAY_PUSH(dbl_char, 'B');
+  SDM_ARRAY_PUSH(dbl_char, 'C');
   printf("dbl_char has a length of %zu\n", dbl_char.length);
   printf("dbl_char has a capacity of %zu\n", dbl_char.capacity);
   for (size_t i=0; i<dbl_char.length; i++) {

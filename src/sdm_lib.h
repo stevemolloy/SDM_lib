@@ -3,30 +3,30 @@
 
 #include <stdlib.h>
 
-#define ARRAY_PUSH(da, item) do {                                   \
-    if (((da)->capacity == 0) || ((da)->data == NULL)) {            \
-      (da)->capacity = DEFAULT_CAPACITY;                            \
-      (da)->data = calloc((da)->capacity, sizeof((da)->data[0]));   \
-      if ((da)->data == NULL) {                                     \
+#define SDM_ARRAY_PUSH(da, item) do {                                   \
+    if (((da).capacity == 0) || ((da).data == NULL)) {            \
+      (da).capacity = DEFAULT_CAPACITY;                            \
+      (da).data = calloc((da).capacity, sizeof((da).data[0]));   \
+      if ((da).data == NULL) {                                     \
         fprintf(stderr, "Could not alloc memory. Quitting.\n");     \
         exit(1);                                                    \
       }                                                             \
     }                                                               \
-    while ((da)->length >= (da)->capacity) {                        \
-      (da)->capacity *= 2;                                          \
-      (da)->data = realloc((da)->data,                              \
-                           (da)->capacity * sizeof((da)->data[0])); \
+    while ((da).length >= (da).capacity) {                        \
+      (da).capacity *= 2;                                          \
+      (da).data = realloc((da).data,                              \
+                           (da).capacity * sizeof((da).data[0])); \
     }                                                               \
-    (da)->data[(da)->length++] = item;                              \
+    (da).data[(da).length++] = item;                              \
   } while (0);
 
-#define ARRAY_FREE(da) do { \
+#define SDM_ARRAY_FREE(da) do { \
     free((da).data);        \
     (da).length = 0;        \
     (da).capacity = 0;      \
   } while (0);
 
-#define ARRAY_RESET(da) do { \
+#define SDM_ARRAY_RESET(da) do { \
     (da).length = 0;         \
   } while (0)
 
