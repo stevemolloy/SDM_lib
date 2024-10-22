@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
   for (size_t i=0; i<char_da.length; i++) {
     printf("Item %zu: %c\n", i, char_da.data[i]);
   }
+  SDM_ARRAY_FREE(char_da);
 
   return 0;
 }
