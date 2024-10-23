@@ -2,6 +2,9 @@
 #define _SDM_LIB_H
 
 #include <stdlib.h>
+#include <stdint.h>
+
+#define hash jenkins_one_at_a_time_hash
 
 #define SDM_ENSURE_ARRAY_CAP(da, cap) do {                     \
     (da).capacity = cap;                                       \
@@ -73,6 +76,8 @@ SDM_StringView SDM_sv_pop_by_delim(SDM_StringView *SV, const char delim);
 void SDM_sv_trim(SDM_StringView *SV);
 
 char *SDM_shift_args(int *argc, char ***argv);
+
+uint32_t jenkins_one_at_a_time_hash(const uint8_t* key, size_t length);
 
 #endif /* ifndef _SDM_LIB_H */
 
