@@ -72,17 +72,11 @@ int main(int argc, char **argv) {
   SDM_ARRAY_FREE(dbl_da);
   printf("dbl_da has a length of %zu\n", dbl_da.length);
   printf("dbl_da has a capacity of %zu\n", dbl_da.capacity);
-  for (size_t i=0; i<dbl_da.length; i++) {
-    printf("Item %zu: %f\n", i, dbl_da.data[i]);
-  }
 
   printf("\nCreating another empty dyn array...\n");
   char_da_array char_da = {0};
   printf("char_da has a length of %zu\n", char_da.length);
   printf("char_da has a capacity of %zu\n", char_da.capacity);
-  for (size_t i=0; i<char_da.length; i++) {
-    printf("Item %zu: %c\n", i, char_da.data[i]);
-  }
 
   printf("\nPushing...\n");
   SDM_ARRAY_PUSH(char_da, 'A');
@@ -93,6 +87,17 @@ int main(int argc, char **argv) {
   for (size_t i=0; i<char_da.length; i++) {
     printf("Item %zu: %c\n", i, char_da.data[i]);
   }
+  size_t new_cap = 1024;
+  printf("Expanding capacity to at least %zu items...\n", new_cap);
+  SDM_ENSURE_ARRAY_MIN_CAP(char_da, new_cap);
+  printf("char_da has a length of %zu\n", char_da.length);
+  printf("char_da has a capacity of %zu\n", char_da.capacity);
+
+  new_cap = 32;
+  printf("shrinking capacity to %zu items...\n", new_cap);
+  SDM_ENSURE_ARRAY_CAP(char_da, new_cap);
+  printf("char_da has a length of %zu\n", char_da.length);
+  printf("char_da has a capacity of %zu\n", char_da.capacity);
   SDM_ARRAY_FREE(char_da);
 
   return 0;

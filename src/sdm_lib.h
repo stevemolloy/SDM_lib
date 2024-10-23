@@ -3,31 +3,57 @@
 
 #include <stdlib.h>
 
-#define SDM_ARRAY_PUSH(da, item) do {                                   \
-    if (((da).capacity == 0) || ((da).data == NULL)) {            \
-      (da).capacity = DEFAULT_CAPACITY;                            \
-      (da).data = calloc((da).capacity, sizeof((da).data[0]));   \
-      if ((da).data == NULL) {                                     \
-        fprintf(stderr, "Could not alloc memory. Quitting.\n");     \
-        exit(1);                                                    \
-      }                                                             \
-    }                                                               \
-    while ((da).length >= (da).capacity) {                        \
-      (da).capacity *= 2;                                          \
-      (da).data = realloc((da).data,                              \
-                           (da).capacity * sizeof((da).data[0])); \
-    }                                                               \
-    (da).data[(da).length++] = item;                              \
+#define SDM_ENSURE_ARRAY_CAP(da, cap) do {                     \
+    (da).capacity = cap;                                       \
+    (da).data = realloc((da).data,                             \
+        (da).capacity * sizeof((da).data[0]));                 \
+    if ((da).data == NULL) {                                   \
+      fprintf(stderr, "ERR: Couldn't alloc memory.\n");        \
+      exit(1);                                                 \
+    }                                                          \
+  } while (0)
+
+#define SDM_ENSURE_ARRAY_MIN_CAP(da, cap) do {                 \
+    if ((da).capacity < cap) {                                 \
+      (da).capacity = cap;                                     \
+      (da).data = realloc((da).data,                           \
+          (da).capacity * sizeof((da).data[0]));               \
+      if ((da).data == NULL) {                                 \
+        fprintf(stderr, "ERR: Couldn't alloc memory. \n");     \
+        exit(1);                                               \
+      }                                                        \
+    }                                                          \
+  } while (0)
+
+#define SDM_ARRAY_PUSH(da, item) do {                          \
+    if (((da).capacity == 0) || ((da).data == NULL)) {         \
+      (da).capacity = DEFAULT_CAPACITY;                        \
+      (da).data = calloc((da).capacity, sizeof((da).data[0])); \
+      if ((da).data == NULL) {                                 \
+        fprintf(stderr, "ERR: Couldn't alloc memory.\n");      \
+        exit(1);                                               \
+      }                                                        \
+    }                                                          \
+    while ((da).length >= (da).capacity) {                     \
+      (da).capacity *= 2;                                      \
+      (da).data = realloc((da).data,                           \
+           (da).capacity * sizeof((da).data[0]));              \
+      if ((da).data == NULL) {                                 \
+        fprintf(stderr, "ERR: Couldn't alloc memory.\n");      \
+        exit(1);                                               \
+      }                                                        \
+    }                                                          \
+    (da).data[(da).length++] = item;                           \
   } while (0);
 
-#define SDM_ARRAY_FREE(da) do { \
-    free((da).data);        \
-    (da).length = 0;        \
-    (da).capacity = 0;      \
+#define SDM_ARRAY_FREE(da) do {                                \
+    free((da).data);                                           \
+    (da).length = 0;                                           \
+    (da).capacity = 0;                                         \
   } while (0);
 
-#define SDM_ARRAY_RESET(da) do { \
-    (da).length = 0;         \
+#define SDM_ARRAY_RESET(da) do {                               \
+    (da).length = 0;                                           \
   } while (0)
 
 typedef struct {
