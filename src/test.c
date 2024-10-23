@@ -100,5 +100,23 @@ int main(int argc, char **argv) {
   printf("char_da has a capacity of %zu\n", char_da.capacity);
   SDM_ARRAY_FREE(char_da);
 
+  printf("\n");
+  DblArray hashmap = new_dblarray(8);
+  push_to_dblarray(&hashmap, "stephen", 69);
+  push_to_dblarray(&hashmap, "stephen", 42);
+  double stephens_value = 0;
+  if (get_from_hashmap(&hashmap, "stephen", &stephens_value)) {
+    printf("\"stephen\" has a value of %f\n", stephens_value);
+  } else {
+    printf("\"stephen\" apparently has no value!\n");
+  }
+  push_to_dblarray(&hashmap, "a", 'a');
+  push_to_dblarray(&hashmap, "e", 'e');
+  push_to_dblarray(&hashmap, "f", 'f');
+  push_to_dblarray(&hashmap, "g", 'g');
+  push_to_dblarray(&hashmap, "i", 'i');
+  push_to_dblarray(&hashmap, "j", 'j');
+  push_to_dblarray(&hashmap, "k", 'k');
+
   return 0;
 }

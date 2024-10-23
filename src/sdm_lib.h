@@ -1,6 +1,7 @@
 #ifndef _SDM_LIB_H
 #define _SDM_LIB_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
 
@@ -77,6 +78,20 @@ void SDM_sv_trim(SDM_StringView *SV);
 
 char *SDM_shift_args(int *argc, char ***argv);
 
+typedef struct {
+  char key[32];
+  double value;
+  bool occupied;
+} Dbl_KVPair;
+
+typedef struct {
+  Dbl_KVPair *data;
+  size_t capacity;
+} DblArray;
+
+DblArray new_dblarray(size_t cap);
+void push_to_dblarray(DblArray *hm, char *key, double value);
+bool get_from_hashmap(DblArray *hm, char *key, double *retval);
 uint32_t jenkins_one_at_a_time_hash(const uint8_t* key, size_t length);
 
 #endif /* ifndef _SDM_LIB_H */

@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <errno.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -71,6 +72,54 @@ char *SDM_shift_args(int *argc, char ***argv) {
   char **ret = *argv;
   (*argv)++;
   return *ret;
+}
+
+DblArray new_dblarray(size_t cap) {
+  DblArray ret = {0};
+  ret.capacity = cap;
+  ret.data = calloc(ret.capacity, sizeof(ret.data[0]));
+  if (ret.data == NULL) {
+    fprintf(stderr, "ERR: Can't alloc.\n");
+    exit(1);
+  }
+  return ret;
+}
+
+void push_to_dblarray(DblArray *hm, char *key, double value) {
+  uint32_t key_hash = hash((uint8_t*)key, strlen(key));
+  uint32_t location = key_hash % hm->capacity;
+  
+  if (!hm->data[location].occupied || (hm->data[location].occupied && strcmp(key, hm->data[location].key)==0)) {
+    strcpy(hm->data[location].key, key);
+    hm->data[location].value = value;
+    hm->data[location].occupied = true;
+  } else {
+    for (size_t i=1; i<hm->capacity; i++) {
+      size_t new_location = (location + i) % hm->capacity;
+      if (!hm->data[new_location].occupied || (hm->data[new_location].occupied && strcmp(key, hm->data[new_location].key)==0)) {
+        strcpy(hm->data[new_location].key, key);
+        hm->data[new_location].value = value;
+        hm->data[new_location].occupied = true;
+        return;
+      }
+    }
+    fprintf(stderr, "Hashmap is full. Cannot store %s\n", key);
+    exit(1);
+  }
+}
+
+bool get_from_hashmap(DblArray *hm, char *key, double *retval) {
+  uint32_t key_hash = hash((uint8_t*)key, strlen(key));
+  uint32_t location = key_hash % hm->capacity;
+
+  for (size_t i=0; i<hm->capacity; i++) {
+    size_t new_location = (location + i) % hm->capacity;
+    if (hm->data[new_location].occupied && strcmp(hm->data[new_location].key, key)==0) {
+      *retval = hm->data[new_location].value;
+      return true;
+    }
+  }
+  return false;
 }
 
 // https://en.wikipedia.org/wiki/Jenkins_hash_function
