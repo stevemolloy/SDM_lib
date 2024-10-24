@@ -56,9 +56,7 @@
     (da).capacity = 0;                                         \
   } while (0);
 
-#define SDM_ARRAY_RESET(da) do {                               \
-    (da).length = 0;                                           \
-  } while (0)
+#define SDM_ARRAY_RESET(da) do { (da).length = 0; } while (0)
 
 typedef struct {
   size_t length;
@@ -89,7 +87,7 @@ typedef struct {
   size_t capacity;
 } DblArray;
 
-DblArray new_dblarray(size_t cap);
+void new_dblarray(size_t cap, DblArray *hm);
 void push_to_dblarray(DblArray *hm, char *key, double value);
 bool get_from_hashmap(DblArray *hm, char *key, double *retval);
 uint32_t jenkins_one_at_a_time_hash(const uint8_t* key, size_t length);

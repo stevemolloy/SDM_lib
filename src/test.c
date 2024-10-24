@@ -101,22 +101,74 @@ int main(int argc, char **argv) {
   SDM_ARRAY_FREE(char_da);
 
   printf("\n");
-  DblArray hashmap = new_dblarray(8);
+  DblArray hashmap = {0};
+  new_dblarray(8, &hashmap);
   push_to_dblarray(&hashmap, "stephen", 69);
   push_to_dblarray(&hashmap, "stephen", 42);
-  double stephens_value = 0;
-  if (get_from_hashmap(&hashmap, "stephen", &stephens_value)) {
-    printf("\"stephen\" has a value of %f\n", stephens_value);
+  double test_value = 0;
+  if (get_from_hashmap(&hashmap, "stephen", &test_value)) {
+    printf("\"stephen\" has a value of %f\n", test_value);
   } else {
     printf("\"stephen\" apparently has no value!\n");
   }
   push_to_dblarray(&hashmap, "a", 'a');
+  push_to_dblarray(&hashmap, "b", 'b');
+  push_to_dblarray(&hashmap, "c", 'c');
+  push_to_dblarray(&hashmap, "d", 'd');
   push_to_dblarray(&hashmap, "e", 'e');
   push_to_dblarray(&hashmap, "f", 'f');
   push_to_dblarray(&hashmap, "g", 'g');
-  push_to_dblarray(&hashmap, "i", 'i');
-  push_to_dblarray(&hashmap, "j", 'j');
-  push_to_dblarray(&hashmap, "k", 'k');
+
+  bool data_integrity_good = true;
+  get_from_hashmap(&hashmap, "a", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'a');
+  get_from_hashmap(&hashmap, "b", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'b');
+  get_from_hashmap(&hashmap, "c", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'c');
+  get_from_hashmap(&hashmap, "d", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'd');
+  get_from_hashmap(&hashmap, "e", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'e');
+  get_from_hashmap(&hashmap, "f", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'f');
+  get_from_hashmap(&hashmap, "g", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'g');
+
+  if (data_integrity_good) {
+    printf("Hashmap data is good\n");
+  } else {
+    return 1;
+  }
+
+  push_to_dblarray(&hashmap, "z", 3.14159);
+  get_from_hashmap(&hashmap, "z", &test_value);
+  printf("Expecting 3.14159, got %f\n", test_value);
+  printf("The hashmap now has a capacity of %zu\n", hashmap.capacity);
+
+  data_integrity_good = true;
+  get_from_hashmap(&hashmap, "a", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'a');
+  get_from_hashmap(&hashmap, "b", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'b');
+  get_from_hashmap(&hashmap, "c", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'c');
+  get_from_hashmap(&hashmap, "d", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'd');
+  get_from_hashmap(&hashmap, "e", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'e');
+  get_from_hashmap(&hashmap, "f", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'f');
+  get_from_hashmap(&hashmap, "g", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 'g');
+  get_from_hashmap(&hashmap, "stephen", &test_value);
+  data_integrity_good = data_integrity_good && (test_value == 42);
+
+  if (data_integrity_good) {
+    printf("Hashmap data is still good\n");
+  } else {
+    return 1;
+  }
 
   return 0;
 }

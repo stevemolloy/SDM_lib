@@ -74,15 +74,13 @@ char *SDM_shift_args(int *argc, char ***argv) {
   return *ret;
 }
 
-DblArray new_dblarray(size_t cap) {
-  DblArray ret = {0};
-  ret.capacity = cap;
-  ret.data = calloc(ret.capacity, sizeof(ret.data[0]));
-  if (ret.data == NULL) {
+void new_dblarray(size_t cap, DblArray *hm) {
+  hm->capacity = cap;
+  hm->data = calloc(hm->capacity, sizeof(hm->data[0]));
+  if (hm->data == NULL) {
     fprintf(stderr, "ERR: Can't alloc.\n");
     exit(1);
   }
-  return ret;
 }
 
 void push_to_dblarray(DblArray *hm, char *key, double value) {
@@ -103,8 +101,16 @@ void push_to_dblarray(DblArray *hm, char *key, double value) {
         return;
       }
     }
-    fprintf(stderr, "Hashmap is full. Cannot store %s\n", key);
-    exit(1);
+    size_t new_capacity = hm->capacity * 2;
+    DblArray *resized_array = calloc(1, sizeof(DblArray));
+    new_dblarray(new_capacity, resized_array);
+    for (size_t i=0; i<hm->capacity; i++) {
+      if (!hm->data[i].occupied) continue;
+      push_to_dblarray(resized_array, hm->data[i].key, hm->data[i].value);
+    }
+    push_to_dblarray(resized_array, key, value);
+    hm->capacity = resized_array->capacity;
+    hm->data = resized_array->data;
   }
 }
 
