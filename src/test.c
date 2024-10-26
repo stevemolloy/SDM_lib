@@ -3,6 +3,51 @@
 
 #include "sdm_lib.h"
 
+char* random_words[256] = {
+    "ABSTRACT",  "ACCIDENT",  "ACCOUNT",  "ACTION",  "ADVANTAGE",  "ADVENTURE",  "AFFECTION",  
+    "AFTERNOON",  "AIRPLANE",  "ALCHEMY",  "ALIEN",  "ALPHABET",  "AMBITION",  "ANIMAL",  
+    "ANTENNA",  "APPLE",  "ARROW",  "ASSEMBLY",  "ATTEMPT",  "AURORA",  "AUTUMN",  
+    "BALCONY",  "BALLOON",  "BANANA",  "BARBECUE",  "BASKET",  "BATTLE",  "BEAUTY",  
+    "BEDROOM",  "BEGINNING",  "BELIEF",  "BENEFIT",  "BICYCLE",  "BIOLOGY",  
+    "BLIZZARD",  "BLOSSOM",  "BLUEBIRD",  "BOARDWALK",  "BOAT",  "BOLDNESS",  
+    "BOULEVARD",  "BREAKFAST",  "BRIDGE",  "BROTHER",  "BUBBLE",  "BUCKET",  
+    "BUILDING",  "BUTTERFLY",  "CABIN",  "CANDLE",  "CANYON",  "CARAVAN",  
+    "CARPET",  "CARROT",  "CASTLE",  "CAVALRY",  "CELEBRATION",  "CELLAR",  
+    "CEREMONY",  "CHALLENGE",  "CHAMPION",  "CHARISMA",  "CHEETAH",  "CHEMISTRY",  
+    "CHESTNUT",  "CHIMNEY",  "CHOCOLATE",  "CIRCUS",  "CLARITY",  "CLASSROOM",  
+    "CLEVERNESS",  "CLOUD",  "COASTLINE",  "COCOA",  "COFFEE",  "COMET",  
+    "COMPASS",  "CONCERT",  "CONQUEST",  "CONSTELLATION",  "CONVERSATION",  "COURAGE",  
+    "CRADLE",  "CRANE",  "CREATION",  "CRESCENT",  "CRYSTAL",  "CUPBOARD",  
+    "CURTAIN",  "DAFFODIL",  "DAISY",  "DANCE",  "DAYDREAM",  "DECEMBER",  
+    "DECISION",  "DEER",  "DELIGHT",  "DESERT",  "DESTINY",  "DIAMOND",  
+    "DISCOVERY",  "DISTANCE",  "DOGWOOD",  "DOORWAY",  "DRAGONFLY",  "DREAMER",  
+    "DROPLET",  "DUNE",  "EAGLE",  "EARTHQUAKE",  "ECSTASY",  "EFFORT",  
+    "ELEMENT",  "EMBER",  "EMOTION",  "ENCHANTMENT",  "ENCOUNTER",  "ENERGY",  
+    "ENIGMA",  "EQUATION",  "ESCAPE",  "EVENING",  "EVOLUTION",  "EXCELLENCE",  
+    "EXPLORER",  "EXPRESSION",  "FACTORY",  "FAITHFULNESS",  "FALLING",  "FANTASY",  
+    "FAREWELL",  "FEATHER",  "FICTION",  "FIELD",  "FIGURE",  "FILM",  
+    "FIREPLACE",  "FLAMINGO",  "FLIGHT",  "FLOWER",  "FOREST",  "FOREVER",  
+    "FORTUNE",  "FOUNTAIN",  "FREEDOM",  "FRIENDSHIP",  "FROST",  "GALAXY",  
+    "GARDEN",  "GATEWAY",  "GENEROSITY",  "GENTLE",  "GESTURE",  "GIFTED",  
+    "GLACIER",  "GLAMOUR",  "GLOWING",  "GOAL",  "GOODWILL",  "GRACEFUL",  
+    "GRAZING",  "GRIFFIN",  "GUITAR",  "HARMONY",  "HARVEST",  "HAVEN",  
+    "HEIGHTS",  "HEROISM",  "HIGHWAY",  "HILLTOP",  "HOLIDAY",  "HONEYBEE",  
+    "HORIZON",  "HOUSE",  "HURRICANE",  "ILLUSION",  "IMAGINATION",  "INFINITY",  
+    "INSIGHT",  "INSPIRATION",  "INTENTION",  "INVENTION",  "ISLAND",  "JASMINE",  
+    "JELLYFISH",  "JOURNEY",  "JUBILEE",  "JUNGLE",  "JUSTICE",  "KINDNESS",  
+    "KINGDOM",  "KITE",  "LADDER",  "LAGOON",  "LANTERN",  "LANDSCAPE",  
+    "LANGUAGE",  "LAUGHTER",  "LAVENDER",  "LEGEND",  "LEMONADE",  "LIBERTY",  
+    "LIGHTHOUSE",  "LILAC",  "LIMITLESS",  "LUCK",  "LULLABY",  "MAGAZINE",  
+    "MAGICIAN",  "MAJESTIC",  "MEADOW",  "MEMORY",  "MERMAID",  "MIDNIGHT",  
+    "MIRACLE",  "MISSION",  "MIST",  "MOLECULE",  "MONSOON",  "MOUNTAIN",  
+    "MYSTERY",  "NARRATIVE",  "NECTAR",  "NIGHTFALL",  "NOONTIME",  "NOVELTY",  
+    "NUTMEG",  "OASIS",  "OCEAN",  "OPERA",  "ORBIT",  "ORCHARD",  
+    "OUTLOOK",  "OVERCOME",  "PACIFIC",  "PALACE",  "PANORAMA",  "PARADISE",  
+    "PASSAGE",  "PASSION",  "PATIENCE",  "PEBBLE",  "PEGASUS",  "PERFECTION",  
+    "PERSEVERANCE",  "PETAL",  "PHOENIX",  "PHRASE",  "PIONEER",  "PIRATE",  
+    "PITCHER",  "PIXEL",  "PLANTATION",  "POETRY",  "PORTAL",  "POTENTIAL",  
+};
+
 #define DEFAULT_CAPACITY 128
 
 typedef struct {
@@ -102,73 +147,54 @@ int main(int argc, char **argv) {
 
   printf("\n");
   DblArray hashmap = {0};
-  new_dblarray(8, &hashmap);
-  push_to_dblarray(&hashmap, "stephen", 69);
-  push_to_dblarray(&hashmap, "stephen", 42);
-  double test_value = 0;
-  if (get_from_hashmap(&hashmap, "stephen", &test_value)) {
-    printf("\"stephen\" has a value of %f\n", test_value);
-  } else {
-    printf("\"stephen\" apparently has no value!\n");
+  for (size_t i=0; i<256; i++) {
+    push_to_dblarray(&hashmap, random_words[i], i*1.001);
   }
-  push_to_dblarray(&hashmap, "a", 'a');
-  push_to_dblarray(&hashmap, "b", 'b');
-  push_to_dblarray(&hashmap, "c", 'c');
-  push_to_dblarray(&hashmap, "d", 'd');
-  push_to_dblarray(&hashmap, "e", 'e');
-  push_to_dblarray(&hashmap, "f", 'f');
-  push_to_dblarray(&hashmap, "g", 'g');
-
   bool data_integrity_good = true;
-  get_from_hashmap(&hashmap, "a", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'a');
-  get_from_hashmap(&hashmap, "b", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'b');
-  get_from_hashmap(&hashmap, "c", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'c');
-  get_from_hashmap(&hashmap, "d", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'd');
-  get_from_hashmap(&hashmap, "e", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'e');
-  get_from_hashmap(&hashmap, "f", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'f');
-  get_from_hashmap(&hashmap, "g", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'g');
+  double test_value = 0;
+  for (size_t i=0; i<256; i++) {
+    int index = 0;
+    GET_HASHMAP_INDEX(hashmap, random_words[i], &index);
+    if (hashmap.data[index].value != i*1.001) {
+      fprintf(stderr, "Hashmap has value %f but should have %f\n", hashmap.data[index].value, i*1.001);
+    }
+    data_integrity_good = (index >= 0) && data_integrity_good && (hashmap.data[index].value == i*1.001);
+  }
 
+  printf("The hashmap has a capacity of %zu\n", hashmap.capacity);
   if (data_integrity_good) {
     printf("Hashmap data is good\n");
   } else {
+    fprintf(stderr, "Hashmap data is not good\n");
     return 1;
   }
 
   push_to_dblarray(&hashmap, "z", 3.14159);
-  get_from_hashmap(&hashmap, "z", &test_value);
+  int index = 0;
+  GET_HASHMAP_INDEX(hashmap, "z", &index);
+  if (index>0) test_value = hashmap.data[index].value;
+  else {
+    fprintf(stderr, "Index of \"x\" could not be found. This is an error.\n");
+    return 1;
+  }
   printf("Expecting 3.14159, got %f\n", test_value);
   printf("The hashmap now has a capacity of %zu\n", hashmap.capacity);
 
   data_integrity_good = true;
-  get_from_hashmap(&hashmap, "a", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'a');
-  get_from_hashmap(&hashmap, "b", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'b');
-  get_from_hashmap(&hashmap, "c", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'c');
-  get_from_hashmap(&hashmap, "d", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'd');
-  get_from_hashmap(&hashmap, "e", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'e');
-  get_from_hashmap(&hashmap, "f", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'f');
-  get_from_hashmap(&hashmap, "g", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 'g');
-  get_from_hashmap(&hashmap, "stephen", &test_value);
-  data_integrity_good = data_integrity_good && (test_value == 42);
+  for (size_t i=0; i<256; i++) {
+    int index = 0;
+    GET_HASHMAP_INDEX(hashmap, random_words[i], &index);
+    data_integrity_good = (index >= 0) && data_integrity_good && (hashmap.data[index].value == i*1.001);
+  }
 
   if (data_integrity_good) {
     printf("Hashmap data is still good\n");
   } else {
+    printf("Hashmap data has been corrupted\n");
     return 1;
   }
+
+  FREE_HASHMAP(hashmap);
 
   return 0;
 }

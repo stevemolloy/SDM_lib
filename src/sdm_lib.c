@@ -74,58 +74,72 @@ char *SDM_shift_args(int *argc, char ***argv) {
   return *ret;
 }
 
-void new_dblarray(size_t cap, DblArray *hm) {
-  hm->capacity = cap;
-  hm->data = calloc(hm->capacity, sizeof(hm->data[0]));
-  if (hm->data == NULL) {
-    fprintf(stderr, "ERR: Can't alloc.\n");
-    exit(1);
-  }
+#define SET_HM_CAPACITY(hm, cap)                            \
+  do {                                                      \
+    (hm)->capacity = cap;                                   \
+    (hm)->data = calloc(hm->capacity, sizeof(hm->data[0])); \
+    if ((hm)->data == NULL) {                               \
+      fprintf(stderr, "ERR: Can't alloc.\n");               \
+      exit(1);                                              \
+    }                                                       \
+  } while (0)
+
+uint32_t get_hashmap_location(const char* key, size_t capacity) {
+  uint32_t key_hash = hash((uint8_t*)key, strlen(key));
+  return key_hash % capacity;
 }
 
+#define PUSH_TO_HASHMAP(hm1, value_of_key, value_of_value)                                    \
+  do {                                                                                       \
+    uint32_t location;                                                           \
+    if ((hm1)->capacity == 0) {                                                               \
+      SET_HM_CAPACITY((hm1), DEFAULT_HM_CAP);                                                 \
+    }                                                                                        \
+    location = get_hashmap_location(value_of_key, (hm1)->capacity);                                    \
+                                                                                             \
+    resize_needed = true;                                                                    \
+    if (!hm1->data[location].occupied ||                                                      \
+      (hm1->data[location].occupied && strcmp(value_of_key, hm1->data[location].key)==0)) {             \
+      strcpy(hm1->data[location].key, value_of_key);                                                   \
+      hm1->data[location].value = value_of_value;                                                      \
+      hm1->data[location].occupied = true;                                                    \
+      resize_needed = false;                                                                 \
+    } else {                                                                                 \
+      for (size_t i=1; i<hm1->capacity; i++) {                                                \
+        size_t new_location = (location + i) % hm1->capacity;                                 \
+        if (!hm1->data[new_location].occupied ||                                              \
+          (hm1->data[new_location].occupied && strcmp(value_of_key, hm1->data[new_location].key)==0)) { \
+          strcpy(hm1->data[new_location].key, value_of_key);                                           \
+          hm1->data[new_location].value = value_of_value;                                              \
+          hm1->data[new_location].occupied = true;                                            \
+          resize_needed = false;                                                             \
+          break;                                                        \
+        }                                                                                    \
+      }                                                                                      \
+    }                                                                                        \
+  } while (0)
+
 void push_to_dblarray(DblArray *hm, char *key, double value) {
-  uint32_t key_hash = hash((uint8_t*)key, strlen(key));
-  uint32_t location = key_hash % hm->capacity;
+  bool resize_needed;
+  PUSH_TO_HASHMAP(hm, key, value);
   
-  if (!hm->data[location].occupied || (hm->data[location].occupied && strcmp(key, hm->data[location].key)==0)) {
-    strcpy(hm->data[location].key, key);
-    hm->data[location].value = value;
-    hm->data[location].occupied = true;
-  } else {
-    for (size_t i=1; i<hm->capacity; i++) {
-      size_t new_location = (location + i) % hm->capacity;
-      if (!hm->data[new_location].occupied || (hm->data[new_location].occupied && strcmp(key, hm->data[new_location].key)==0)) {
-        strcpy(hm->data[new_location].key, key);
-        hm->data[new_location].value = value;
-        hm->data[new_location].occupied = true;
-        return;
-      }
+  if (resize_needed) {
+    DblArray *resized_array = calloc(1, sizeof(*hm));
+    if (resized_array == NULL) {
+      fprintf(stderr, "ERR: Can't alloc.\n");
+      exit(1);
     }
-    size_t new_capacity = hm->capacity * 2;
-    DblArray *resized_array = calloc(1, sizeof(DblArray));
-    new_dblarray(new_capacity, resized_array);
+    SET_HM_CAPACITY(resized_array, hm->capacity * 2);
     for (size_t i=0; i<hm->capacity; i++) {
       if (!hm->data[i].occupied) continue;
       push_to_dblarray(resized_array, hm->data[i].key, hm->data[i].value);
     }
     push_to_dblarray(resized_array, key, value);
     hm->capacity = resized_array->capacity;
+    free(hm->data);
     hm->data = resized_array->data;
+    free(resized_array);
   }
-}
-
-bool get_from_hashmap(DblArray *hm, char *key, double *retval) {
-  uint32_t key_hash = hash((uint8_t*)key, strlen(key));
-  uint32_t location = key_hash % hm->capacity;
-
-  for (size_t i=0; i<hm->capacity; i++) {
-    size_t new_location = (location + i) % hm->capacity;
-    if (hm->data[new_location].occupied && strcmp(hm->data[new_location].key, key)==0) {
-      *retval = hm->data[new_location].value;
-      return true;
-    }
-  }
-  return false;
 }
 
 // https://en.wikipedia.org/wiki/Jenkins_hash_function

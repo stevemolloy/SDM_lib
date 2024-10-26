@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #define hash jenkins_one_at_a_time_hash
 
@@ -87,9 +88,31 @@ typedef struct {
   size_t capacity;
 } DblArray;
 
-void new_dblarray(size_t cap, DblArray *hm);
+uint32_t get_hashmap_location(const char* key, size_t capacity);
+
+#define DEFAULT_HM_CAP 256
+
+#define FREE_HASHMAP(hm) \
+  do {                   \
+    (hm).capacity = 0;   \
+    free((hm).data);     \
+  } while (0);
+
+#define GET_HASHMAP_INDEX(hm, value_of_key, index_addr)                       \
+  do {                                                                       \
+    *index_addr = -1;                                                        \
+    uint32_t location = get_hashmap_location((value_of_key), (hm).capacity); \
+    for (size_t offset=0; offset<(hm).capacity; offset++) {                  \
+      int new_location = (location + offset) % (hashmap).capacity;           \
+      if ((hm).data[new_location].occupied &&                                \
+        (strcmp((hm).data[new_location].key, (value_of_key))==0)) {          \
+        *index_addr = new_location;                                          \
+        break;                                                               \
+      }                                                                      \
+    }                                                                        \
+  } while (0)
+
 void push_to_dblarray(DblArray *hm, char *key, double value);
-bool get_from_hashmap(DblArray *hm, char *key, double *retval);
 uint32_t jenkins_one_at_a_time_hash(const uint8_t* key, size_t length);
 
 #endif /* ifndef _SDM_LIB_H */
