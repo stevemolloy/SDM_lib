@@ -151,14 +151,13 @@ int main(int argc, char **argv) {
     push_to_dblarray(&hashmap, random_words[i], i*1.001);
   }
   bool data_integrity_good = true;
-  double test_value = 0;
   for (size_t i=0; i<256; i++) {
     int index = 0;
     GET_HASHMAP_INDEX(hashmap, random_words[i], &index);
-    if (hashmap.data[index].value != i*1.001) {
-      fprintf(stderr, "Hashmap has value %f but should have %f\n", hashmap.data[index].value, i*1.001);
+    if (HM_VAL_AT(hashmap, index) != i*1.001) {
+      fprintf(stderr, "Hashmap has value %f but should have %f\n", HM_VAL_AT(hashmap, index), i*1.001);
     }
-    data_integrity_good = (index >= 0) && data_integrity_good && (hashmap.data[index].value == i*1.001);
+    data_integrity_good = (index >= 0) && data_integrity_good && (HM_VAL_AT(hashmap, index) == i*1.001);
   }
 
   printf("The hashmap has a capacity of %zu\n", hashmap.capacity);
@@ -172,19 +171,21 @@ int main(int argc, char **argv) {
   push_to_dblarray(&hashmap, "z", 3.14159);
   int index = 0;
   GET_HASHMAP_INDEX(hashmap, "z", &index);
-  if (index>0) test_value = hashmap.data[index].value;
-  else {
+  if (index<=0) {
     fprintf(stderr, "Index of \"x\" could not be found. This is an error.\n");
     return 1;
   }
-  printf("Expecting 3.14159, got %f\n", test_value);
+  printf("Expecting 3.14159, got %f\n", HM_VAL_AT(hashmap, index));
   printf("The hashmap now has a capacity of %zu\n", hashmap.capacity);
 
   data_integrity_good = true;
   for (size_t i=0; i<256; i++) {
     int index = 0;
     GET_HASHMAP_INDEX(hashmap, random_words[i], &index);
-    data_integrity_good = (index >= 0) && data_integrity_good && (hashmap.data[index].value == i*1.001);
+    data_integrity_good = 
+      (index >= 0) && 
+      data_integrity_good && 
+      (HM_VAL_AT(hashmap, index) == i*1.001);
   }
 
   if (data_integrity_good) {
@@ -195,6 +196,15 @@ int main(int argc, char **argv) {
   }
 
   FREE_HASHMAP(hashmap);
+
+  DblArray new_hashmap = {0};
+  char* my_key = "stephen";
+  double my_value = 1.111;
+  PUSH_TO_HASHMAP((&new_hashmap), my_key, my_value);
+  GET_HASHMAP_INDEX(new_hashmap, my_key, &index);
+  printf("Expecting \"%s\" to be equal to %f. Got %f\n", my_key, my_value, HM_VAL_AT(new_hashmap, index));
+
+  FREE_HASHMAP(new_hashmap);
 
   return 0;
 }
