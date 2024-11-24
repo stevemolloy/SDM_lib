@@ -6,6 +6,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#define SDM_FREE free
+#define SDM_MALLOC malloc
+
 #define hash jenkins_one_at_a_time_hash
 
 #define SDM_ENSURE_ARRAY_CAP(da, cap) do {                     \
@@ -55,7 +58,7 @@
   } while (0);
 
 #define SDM_ARRAY_FREE(da) do {                                \
-    free((da).data);                                           \
+    SDM_FREE((da).data);                                           \
     (da).length = 0;                                           \
     (da).capacity = 0;                                         \
   } while (0);
@@ -65,20 +68,19 @@
 typedef struct {
   size_t length;
   char *data;
-} SDM_StringView;
+} sdm_string_view;
 
 #define SDM_SV_F "%.*s"
 #define SDM_SV_Vals(S) (int)(S).length, (S).data
 
-char *SDM_read_entire_file(const char *file_path);
+char *sdm_shift_args(int *argc, char ***argv);
 
-SDM_StringView SDM_cstr_as_sv(char *cstr);
-SDM_StringView SDM_sized_str_as_sv(char *cstr, size_t length);
+char *sdm_read_entire_file(const char *file_path);
 
-SDM_StringView SDM_sv_pop_by_delim(SDM_StringView *SV, const char delim);
-void SDM_sv_trim(SDM_StringView *SV);
-
-char *SDM_shift_args(int *argc, char ***argv);
+sdm_string_view sdm_cstr_as_sv(char *cstr);
+sdm_string_view sdm_sized_str_as_sv(char *cstr, size_t length);
+sdm_string_view sdm_sv_pop_by_delim(sdm_string_view *SV, const char delim);
+void sdm_sv_trim(sdm_string_view *SV);
 
 typedef struct {
   char key[32];
@@ -113,7 +115,7 @@ typedef struct {
 #define FREE_HASHMAP(hm) \
   do {                   \
     (hm).capacity = 0;   \
-    free((hm).data);     \
+    SDM_FREE((hm).data);     \
   } while (0);
 
 #define GET_HASHMAP_INDEX(hm, value_of_key, index_addr)                      \
@@ -170,5 +172,195 @@ void push_to_dblarray(DblArray *hm, char *key, double value);
 uint32_t get_hashmap_location(const char* key, size_t capacity);
 uint32_t jenkins_one_at_a_time_hash(const uint8_t* key, size_t length);
 
+#define SDM_ARENA_DEFAULT_CAP 256 * 1024*1024
+
+#define SDM_FREE_AND_NULL(ptr) \
+do {                           \
+  free((ptr));                 \
+  (ptr) = NULL;                \
+} while (0)
+
+typedef struct sdm_arena_t sdm_arena_t;
+
+struct sdm_arena_t {
+  size_t length;
+  size_t capacity;
+  void *start;
+  sdm_arena_t *next;
+};
+
+void sdm_arena_init(sdm_arena_t *arena, size_t capacity);
+void *sdm_arena_alloc(sdm_arena_t *arena, size_t size);
+void sdm_arena_free(sdm_arena_t *arena);
+
 #endif /* ifndef _SDM_LIB_H */
+
+#ifdef SDM_LIB_IMPLEMENTATION
+
+#include <ctype.h>
+#include <errno.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+char *sdm_read_entire_file(const char *file_path) {
+  // Reads an entire file into a char array, and returns a ptr to this. The ptr should be freed by the caller
+  FILE *f = fopen(file_path, "r");
+  if (f==NULL) {
+    fprintf(stderr, "Could not read %s: %s\n", file_path, strerror(errno));
+    exit(1);
+  }
+
+  fseek(f, 0L, SEEK_END);
+  int sz = ftell(f);
+  fseek(f, 0L, SEEK_SET);
+
+  char *contents = calloc(sz + 1, sizeof(char));
+  if (contents==NULL) {
+    fprintf(stderr, "Could not allocate memory. Buy more RAM I guess?\n");
+    exit(1);
+  }
+  fread(contents, 1, sz, f);
+
+  fclose(f);
+  
+  return contents;
+}
+
+sdm_string_view sdm_cstr_as_sv(char *cstr) {
+  return (sdm_string_view){
+    .data = cstr,
+    .length = strlen(cstr)
+  };
+}
+
+sdm_string_view sdm_sized_str_as_sv(char *cstr, size_t length) {
+  return (sdm_string_view) {
+    .data = cstr,
+    .length = length
+  };
+}
+
+sdm_string_view sdm_sv_pop_by_delim(sdm_string_view *SV, const char delim) {
+  sdm_string_view ret = {0};
+  ret.data = SV->data;
+
+  while ((*SV->data != delim) && (SV->length>0)) {
+    SV->data++;
+    SV->length--;
+    ret.length++;
+  }
+  SV->data++;
+  SV->length--;
+
+  return ret;
+}
+
+void sdm_sv_trim(sdm_string_view *SV) {
+  while (isspace(*SV->data) && SV->length>0) {
+    SV->data++;
+    SV->length--;
+  }
+}
+
+char *sdm_shift_args(int *argc, char ***argv) {
+  if (*argc <= 0) return NULL;
+  (*argc)--;
+  char **ret = *argv;
+  (*argv)++;
+  return *ret;
+}
+
+uint32_t get_hashmap_location(const char* key, size_t capacity) {
+  uint32_t key_hash = hash((uint8_t*)key, strlen(key));
+  return key_hash % capacity;
+}
+
+void resize_dblarray(DblArray *hm) {
+  DblArray resized_array = {0};
+  SET_HM_CAPACITY((&resized_array), hm->capacity * 2);
+  for (size_t i=0; i<hm->capacity; i++) {
+    if (!hm->data[i].occupied) continue;
+    push_to_dblarray(&resized_array, hm->data[i].key, hm->data[i].value);
+  }
+  hm->capacity = resized_array.capacity;
+  SDM_FREE(hm->data);
+  hm->data = resized_array.data;
+}
+
+void push_to_dblarray(DblArray *hm, char *key, double value) {
+  if (hm->length >= hm->capacity) resize_dblarray(hm);
+  PUSH_TO_HASHMAP(hm, key, value);
+}
+
+// https://en.wikipedia.org/wiki/Jenkins_hash_function
+uint32_t jenkins_one_at_a_time_hash(const uint8_t* key, size_t length) {
+  size_t i = 0;
+  uint32_t hash = 0;
+  while (i != length) {
+    hash += key[i++];
+    hash += hash << 10;
+    hash ^= hash >> 6;
+  }
+  hash += hash << 3;
+  hash ^= hash >> 11;
+  hash += hash << 15;
+  return hash;
+}
+
+void sdm_arena_init(sdm_arena_t *arena, size_t capacity) {
+  arena->start = malloc(capacity);
+  if (arena->start == NULL) {
+    fprintf(stderr, "Memory problem. Aborting.\n");
+    exit(1);
+  }
+  memset(arena->start, 0, capacity);
+  arena->next = malloc(sizeof(*arena->next));
+  if (arena->next == NULL) {
+    fprintf(stderr, "Memory problem. Aborting.\n");
+    exit(1);
+  }
+  memset(arena->next, 0, sizeof(*arena->next));
+  arena->capacity = capacity;
+  arena->length = 0;
+}
+
+void *sdm_arena_alloc(sdm_arena_t *arena, size_t size) {
+  if (arena->start == NULL) {
+    size_t capacity = (arena->capacity > 0) ? arena->capacity : SDM_ARENA_DEFAULT_CAP;
+    while (capacity < size) {
+      capacity *= 2;
+    }
+    sdm_arena_init(arena, capacity);
+  }
+
+  if (arena->capacity - arena->length < size) {
+    if (arena->next->capacity == 0) arena->next->capacity = arena->capacity;
+    return sdm_arena_alloc(arena->next, size);
+  }
+
+  void *return_val = (char*)arena->start + arena->length;
+
+  if (size > 0)
+    arena->length += size;
+  else
+    arena->length += 1;
+
+  return return_val;
+}
+
+void sdm_arena_free(sdm_arena_t *arena) {
+  if (arena->next) {
+    sdm_arena_free(arena->next);
+  }
+
+  SDM_FREE_AND_NULL(arena->start);
+
+  arena->length = 0;
+  arena->capacity = 0;
+
+  SDM_FREE_AND_NULL(arena->next);
+}
+
+#endif // SDM_LIB_IMPLEMENTATION
 

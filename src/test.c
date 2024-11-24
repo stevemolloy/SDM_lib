@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define SDM_LIB_IMPLEMENTATION
 #include "sdm_lib.h"
 
 char* random_words[256] = {
@@ -60,28 +61,36 @@ typedef struct {
   size_t capacity;
 } char_da_array;
 
+static sdm_arena_t main_arena = {0};
+static sdm_arena_t *active_arena = &main_arena;
+
+void *active_alloc(size_t size) {
+  return sdm_arena_alloc(active_arena, size);
+}
+#define ALLOC active_alloc
+
 int main(int argc, char **argv) {
-  SDM_shift_args(&argc, &argv);
+  sdm_shift_args(&argc, &argv);
   if (argc > 0) printf("Arguments:\n");
   while (argc > 0) {
-    char *argument = SDM_shift_args(&argc, &argv);
+    char *argument = sdm_shift_args(&argc, &argv);
     printf("\t%s\n", argument);
   }
 
   const char *file_path = "./src/test.c";
-  char *contents = SDM_read_entire_file(file_path);
+  char *contents = sdm_read_entire_file(file_path);
   free(contents);
 
   char *multi_line_str = "Hello\nWorld\nBlahblah\n";
-  SDM_StringView multi_line_sv = SDM_cstr_as_sv(multi_line_str);
-  SDM_StringView line_1 = SDM_sv_pop_by_delim(&multi_line_sv, '\n');
-  SDM_StringView line_2 = SDM_sv_pop_by_delim(&multi_line_sv, '\n');
+  sdm_string_view multi_line_sv = sdm_cstr_as_sv(multi_line_str);
+  sdm_string_view line_1 = sdm_sv_pop_by_delim(&multi_line_sv, '\n');
+  sdm_string_view line_2 = sdm_sv_pop_by_delim(&multi_line_sv, '\n');
   printf("Line 1: "SDM_SV_F"\n", SDM_SV_Vals(line_1));
   printf("Line 2: "SDM_SV_F"\n", SDM_SV_Vals(line_2));
 
   char *test_trim = "   Hello!";
-  SDM_StringView test_trim_sv = SDM_cstr_as_sv(test_trim);
-  SDM_sv_trim(&test_trim_sv);
+  sdm_string_view test_trim_sv = sdm_cstr_as_sv(test_trim);
+  sdm_sv_trim(&test_trim_sv);
   printf("\n");
   printf("Untrimmed string = %s\n", test_trim);
   printf("Trimmed string = "SDM_SV_F"\n", SDM_SV_Vals(test_trim_sv));
@@ -203,6 +212,37 @@ int main(int argc, char **argv) {
   printf("Expecting \"%s\" to be equal to %f. Got %f\n", my_key, my_value, HM_VAL_AT(new_hashmap, index));
 
   FREE_HASHMAP(new_hashmap);
+
+  printf("\nTesting the memory arena\n");
+  size_t capacity = 4;   // Too small. Demonstrates the flexibility of the allocation strategy.
+  sdm_arena_init(&main_arena, capacity);
+
+  printf("Allocating 'original_string' on the stack in the usual way\n");
+  char *original_string = "Hello world";
+
+  printf("Allocating space in the arena for 'new_string'\n");
+  char *new_string = ALLOC(strlen(original_string));
+
+  memcpy(new_string, original_string, strlen(original_string));
+  printf("Chaning the fifth character of 'new_string' to be a '#'\n");
+  new_string[5] = '#';
+
+  printf("original_string => %s\n", original_string);
+  printf("new_string      => %s\n", new_string);
+
+  size_t dbl_array_len = 20;
+  printf("\nNow allocating space for %zu doubles in the same memory arena\n", dbl_array_len);
+  double *dbl_array = ALLOC(dbl_array_len * sizeof(double));
+  for (size_t i=0; i<dbl_array_len; i++) {
+    dbl_array[i] = 1.0 / (i + 1);
+  }
+  for (size_t i=0; i<dbl_array_len; i++) {
+   printf("dbl_array[%zu] = %f\n", i, dbl_array[i]);
+  }
+
+  printf("\n");
+  printf("Clearing and deallocating the arena\n(Valgrind should be happy)\n");
+  sdm_arena_free(&main_arena);
 
   return 0;
 }
