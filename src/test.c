@@ -48,8 +48,6 @@ char* random_words[256] = {
     "PITCHER",  "PIXEL",  "PLANTATION",  "POETRY",  "PORTAL",  "POTENTIAL",  
 };
 
-#define DEFAULT_CAPACITY 128
-
 typedef struct {
   double *data;
   size_t length;

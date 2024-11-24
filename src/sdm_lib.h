@@ -30,6 +30,8 @@
     }                                                          \
   } while (0)
 
+#define DEFAULT_CAPACITY 128
+
 #define SDM_ARRAY_PUSH(da, item) do {                             \
     if (((da).capacity == 0) || ((da).data == NULL)) {            \
       (da).capacity = DEFAULT_CAPACITY;                           \
