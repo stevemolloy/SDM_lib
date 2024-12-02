@@ -122,6 +122,7 @@ char *sdm_sv_to_cstr(sdm_string_view sv);
 sdm_string_view sdm_sized_str_as_sv(char *cstr, size_t length);
 sdm_string_view sdm_sv_pop_by_delim(sdm_string_view *SV, const char delim);
 sdm_string_view sdm_sv_pop_by_whitespace(sdm_string_view *SV);
+int sdm_pop_integer(sdm_string_view *SV);
 void sdm_sv_trim(sdm_string_view *SV);
 
 typedef struct {
@@ -312,6 +313,15 @@ sdm_string_view sdm_sv_pop_by_delim(sdm_string_view *SV, const char delim) {
   SV->length--;
 
   return ret;
+}
+
+int sdm_pop_integer(sdm_string_view *SV) {
+  char *new_pos;
+  int retval = strtol(SV->data, &new_pos, 0);
+  size_t diff = new_pos - SV->data;
+  SV->data = new_pos;
+  SV->length -= diff;
+  return retval;
 }
 
 void sdm_sv_trim(sdm_string_view *SV) {
